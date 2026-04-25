@@ -1,0 +1,8 @@
+numpy
+gmsh
+scipy
+pyvista
+mpi4py
+matplotlib
+petsc4py
+dolfinx
