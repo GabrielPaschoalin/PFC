@@ -13,7 +13,7 @@ local t_env = 0.03        -- espessura do envoltório
 
 --  Semi-esfera (parâmetros em cm) ====
 local raio_esfera     = 1.7/2      -- raio da esfera
-local distancia_esfera = -2      -- distância vertical do centro até a base do núcleo
+local distancia_esfera = -0.5      -- distância vertical do centro até a base do núcleo
 
 -- Envoltório externo
 local r_env        = h_nucleo*1.5      -- raio do envoltório (garanta folga > 2x maior que a peça)
@@ -21,9 +21,8 @@ local z_env_centro = 0---h_nucleo/2  -- centro vertical (pode ajustar)
 
 -- ===== Parâmetros da bobina =====
 local N_turns   = 2000     -- nº de espiras
-local I_coil    = 2      -- corrente [A]
+local I_coil    = 1      -- corrente [A]
 local mesh_bob  = 0.1      -- malha alvo na bobina (cm)
-
 
 -- ================== CÓDIGO =========================================
 
