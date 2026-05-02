@@ -1,0 +1,1 @@
+Frame 877 - A máscara encontrou objetos escuros, mas todos foram rejeitados pelos filtros de tamanho, altura, formato ou medição do topo.
