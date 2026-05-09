@@ -1,0 +1,60 @@
+import numpy as np
+import control as ct
+import sympy as sp
+
+# --- PASSO 0: Definição Numérica ---
+A_num = np.array([
+    [-32.74, 0.00, -0.49],
+    [ 0.00, 0.00, 1.00],
+    [-18.23, 1962.00, 0.00]
+], dtype=float)
+
+B_num = np.array([[2.43], [0.00], [0.00]], dtype=float)
+C_num = np.array([[0.00, 1.00, 0.00]], dtype=float)
+D_num = np.array([[0.00]], dtype=float)
+
+# --- PASSO 1: Cálculo Simbólico Passo a Passo ---
+print("--- Cálculo Passo a Passo (Simbólico) ---")
+s = sp.symbols('s')
+
+# Converter matrizes para SymPy
+A_sym = sp.Matrix(A_num)
+B_sym = sp.Matrix(B_num)
+C_sym = sp.Matrix(C_num)
+I_sym = sp.eye(3)
+
+# 1.1 Calcular (sI - A)
+sI_A = s * I_sym - A_sym
+print("\n1. Matriz (sI - A):")
+sp.pprint(sI_A)
+
+# 1.2 Calcular a Inversa (sI - A)^-1
+# Usando a adjunta / determinante
+inv_sI_A = sI_A.inv()
+print("\n2. Inversa (sI - A)^-1 (simplificada):")
+sp.pprint(sp.simplify(inv_sI_A))
+
+# 1.3 Calcular C * (sI - A)^-1 * B
+G_step_by_step = (C_sym * inv_sI_A * B_sym)[0]
+G_step_by_step = sp.simplify(G_step_by_step)
+
+print("\n3. Resultado Final G(s) = C*(sI-A)^-1*B:")
+sp.pprint(G_step_by_step)
+
+# --- PASSO 2: Obtenção via Biblioteca Control ---
+print("\n" + "="*40)
+print("--- Resultado via Library Control ---")
+sys_ss = ct.ss(A_num, B_num, C_num, D_num)
+G_ct = ct.ss2tf(sys_ss)
+G_ct = ct.minreal(G_ct, verbose=False)
+
+print(G_ct)
+
+# --- PASSO 3: Comparação de Polos e Zeros ---
+print("\n--- Comparação de Estabilidade ---")
+# Polos simbólicos (raízes do denominador)
+den_poly = sp.Poly(sp.denom(G_step_by_step), s)
+polos_sym = den_poly.all_roots()
+
+print(f"Polos (Control): {ct.poles(G_ct)}")
+print(f"Polos (Simbólico): {[float(p.evalf()) for p in polos_sym]}")

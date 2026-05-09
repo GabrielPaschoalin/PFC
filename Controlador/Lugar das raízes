@@ -1,0 +1,165 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# ============================================================
+# Função de transferência do levitador
+# G(s) = Delta x(s) / Delta u(s)
+# ============================================================
+
+# Numerador: -44,2989
+num = np.array([-44.2989])
+
+# Denominador: s^3 + 32,74s^2 - 1970,9327s - 64235,88
+den = np.array([1.0, 32.74, -1970.9327, -64235.88])
+
+
+# ============================================================
+# Polos e zeros de malha aberta
+# ============================================================
+
+polos = np.roots(den)
+zeros = np.roots(num)  # Como o numerador é constante, não há zeros finitos
+
+print("Função de transferência:")
+print("G(s) = -44.2989 / (s^3 + 32.74s^2 - 1970.9327s - 64235.88)")
+print()
+
+print("Polos de malha aberta:")
+for p in polos:
+    print(f"{p.real:.6f} {p.imag:+.6f}j")
+
+print()
+
+if len(zeros) == 0:
+    print("Zeros de malha aberta: nenhum zero finito")
+else:
+    print("Zeros de malha aberta:")
+    for z in zeros:
+        print(f"{z.real:.6f} {z.imag:+.6f}j")
+
+
+# ============================================================
+# Gráfico de polos e zeros de malha aberta
+# ============================================================
+
+plt.figure(figsize=(8, 6))
+
+plt.axhline(0, color="black", linewidth=0.8)
+plt.axvline(0, color="black", linewidth=0.8)
+
+plt.scatter(polos.real, polos.imag, marker="x", s=120, label="Polos de malha aberta")
+
+if len(zeros) > 0:
+    plt.scatter(zeros.real, zeros.imag, marker="o", s=120, facecolors="none", label="Zeros de malha aberta")
+else:
+    plt.text(
+        0.05, 0.95,
+        "Sem zeros finitos",
+        transform=plt.gca().transAxes,
+        verticalalignment="top"
+    )
+
+plt.title("Polos e zeros de malha aberta")
+plt.xlabel("Parte real")
+plt.ylabel("Parte imaginária")
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+plt.savefig("polos_zeros_malha_aberta.png", dpi=300)
+plt.show()
+
+
+# ============================================================
+# Lugar das raízes
+# Considerando malha fechada com C(s) = K
+# Equação característica: D(s) + K*N(s) = 0
+# ============================================================
+
+def pad_num_to_den(num, den):
+    """
+    Ajusta o tamanho do numerador para somar com o denominador.
+    Exemplo:
+    num = [-44.2989]
+    den = [1, 32.74, -1970.9327, -64235.88]
+
+    num ajustado = [0, 0, 0, -44.2989]
+    """
+    return np.pad(num, (len(den) - len(num), 0), mode="constant")
+
+
+num_padded = pad_num_to_den(num, den)
+
+# Faixa de ganhos K para o lugar das raízes
+# K >= 0, como no lugar das raízes convencional
+K_values = np.concatenate(([0], np.logspace(-2, 5, 1000)))
+
+roots_locus = []
+
+for K in K_values:
+    char_poly = den + K * num_padded
+    roots = np.roots(char_poly)
+    roots_locus.append(roots)
+
+roots_locus = np.array(roots_locus)
+
+
+# ============================================================
+# Plot do lugar das raízes
+# ============================================================
+
+plt.figure(figsize=(9, 7))
+
+plt.axhline(0, color="black", linewidth=0.8)
+plt.axvline(0, color="black", linewidth=0.8)
+
+# Plota todas as raízes para todos os valores de K
+for i in range(roots_locus.shape[1]):
+    plt.plot(
+        roots_locus[:, i].real,
+        roots_locus[:, i].imag,
+        linewidth=1.2
+    )
+
+# Marca polos de malha aberta
+plt.scatter(
+    polos.real,
+    polos.imag,
+    marker="x",
+    s=140,
+    label="Polos de malha aberta"
+)
+
+# Marca zeros de malha aberta, se houver
+if len(zeros) > 0:
+    plt.scatter(
+        zeros.real,
+        zeros.imag,
+        marker="o",
+        s=140,
+        facecolors="none",
+        label="Zeros de malha aberta"
+    )
+
+plt.title("Lugar das raízes do sistema em malha aberta")
+plt.xlabel("Parte real")
+plt.ylabel("Parte imaginária")
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+plt.savefig("lugar_das_raizes_maglev.png", dpi=300)
+plt.show()
+
+
+# ============================================================
+# Informação extra: polos para alguns valores de K
+# ============================================================
+
+print()
+print("Polos de malha fechada para alguns valores de K:")
+for K in [0, 1, 10, 100, 1000, 10000]:
+    char_poly = den + K * num_padded
+    roots = np.roots(char_poly)
+
+    print(f"\nK = {K}")
+    for r in roots:
+        print(f"{r.real:.6f} {r.imag:+.6f}j")
